@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MChess Pro 8.0 UCI</title>
+  <style>
+    :root { --bg: #0f1419; --card: #171f27; --text: #e6edf3; --muted: #9aa7b4; --accent: #58a6ff; --border: #2a3441; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.25rem; }
+    header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+    h1 { margin: 0 0 0.4rem; font-size: 2.1rem; }
+    .sub { color: var(--muted); margin: 0 0 1.2rem; }
+    .btns { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .btn { display: inline-block; padding: 0.65rem 1.1rem; border-radius: 6px; text-decoration: none; font-weight: 600; border: 1px solid var(--border); color: var(--text); background: var(--card); }
+    .btn.primary { background: var(--accent); color: #0b1117; border-color: var(--accent); }
+    section { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+    h2 { margin-top: 0; font-size: 1.25rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; }
+    code { background: #0b1117; padding: 0.15rem 0.35rem; border-radius: 4px; font-size: 0.9em; }
+    ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    footer { color: var(--muted); font-size: 0.85rem; text-align: center; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>MChess Pro 8.0 UCI</h1>
+      <p class="sub">Native cross-platform UCI port of Marty Hirsch's 1998 M-Chess Professional 8.0, powered by 64-bit Magic Bitboards, Lazy SMP, original <code>PRBOOK/</code>, and full 35-set 3/4-piece DTM <code>TB/</code> tablebases.</p>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/tedsummers/MChess8-UCI/releases/latest/download/MChess8_UCI_Package.zip">Download MChess8_UCI_Package.zip</a>
+        <a class="btn" href="MANUAL.html">User Manual</a>
+        <a class="btn" href="WHATS_NEW.html">What's New vs. 1998</a>
+        <a class="btn" href="https://github.com/tedsummers/MChess8-UCI">Source &amp; Releases</a>
+      </div>
+    </header>
+
+    <section>
+      <h2>Included Binaries</h2>
+      <table>
+        <thead><tr><th>Binary</th><th>Platform</th></tr></thead>
+        <tbody>
+          <tr><td><code>mchess8_uci_x64</code> / <code>mchess8_uci</code></td><td>Linux 64-bit &amp; 32-bit x86</td></tr>
+          <tr><td><code>mchess8_uci_x64.exe</code> / <code>mchess8_uci.exe</code></td><td>Windows 64-bit &amp; 32-bit x86</td></tr>
+          <tr><td><code>mchess8_uci_mac_arm64</code> / <code>mchess8_uci_mac_intel</code></td><td>macOS Apple Silicon &amp; Intel</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Key Features</h2>
+      <ul>
+        <li><strong>64-bit Magic Bitboards &amp; 1 MB Lockless Pawn Hash Table:</strong> Preserves M-Chess Pro 8.0's evaluation character at ~2.3×+ higher speed (~1.05M nps 1T, ~4.25M nps 8T on Kiwipete).</li>
+        <li><strong>Multi-Threaded Search (<code>Threads</code> 1–64):</strong> Persistent Lazy SMP worker pool with a 4-bucket lockless XOR transposition table (up to <code>4096</code> MB, default <code>512</code> MB).</li>
+        <li><strong>Original Book &amp; Complete 3/4-Piece Tablebases:</strong> Includes <code>PRBOOK/</code> (<code>Tournament</code> default, <code>Wide</code>, <code>Broad</code>, <code>Off</code>, <code>DeterministicBook</code>) and all 35 sets (70 files) of <code>TB/</code> DTM tablebases.</li>
+        <li><strong>Tournament-Tuned Defaults:</strong> <code>Hash=512</code>, <code>BookMode=Tournament</code>, <code>Ponder=true</code>, <code>NullMove=true</code>, <code>Extensions=true</code>, <code>RandomLimit=0</code>, and MChess Pro 8.0 style sliders (<code>5/4/1/4/5/2</code>).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Quick Start</h2>
+      <p>Extract <code>MChess8_UCI_Package.zip</code>, keep the binary alongside <code>PRBOOK/</code>, <code>TB/</code>, and <code>SETTINGS.M80</code>, and register the binary for your OS as a UCI engine in Arena, CuteChess, BanksiaGUI, Scid, or ChessBase.</p>
+    </section>
+
+    <footer>MChess Pro 8.0 UCI &mdash; Native C Port of M-Chess Professional 8.0</footer>
+  </div>
+</body>
+</html>
