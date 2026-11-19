@@ -92,6 +92,10 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
     uint64_t all_occ = b->occ[2];
     int wk = b->wk_sq;
     int bk = b->bk_sq;
+    uint64_t w_ring = BB_KING_ATK[wk] | (1ULL << wk);
+    uint64_t b_ring = BB_KING_ATK[bk] | (1ULL << bk);
+    int w_atk_cnt = 0, w_atk_wt = 0, w_ring_hits = 0;
+    int b_atk_cnt = 0, b_atk_wt = 0, b_ring_hits = 0;
 
     /* Pawn structure & passed-pawn detection via lockless Pawn Hash Table */
     uint64_t passed_w = 0, passed_b = 0;
@@ -180,9 +184,11 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score += knight_psqt[r][f];
-        int m = popcnt64(BB_KNIGHT_ATK[sq] & ~w_occ);
+        uint64_t atk = BB_KNIGHT_ATK[sq];
+        int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 4) * 5;
         if (BB_CHEBY_DIST[sq][bk] <= 2) ks_score += 12;
+        if (atk & b_ring) { w_atk_cnt++; w_atk_wt += 2; w_ring_hits += popcnt64(atk & b_ring & ~b_occ); }
     }
 
     /* Black Knights */
@@ -191,9 +197,11 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score -= knight_psqt[7 - r][f];
-        int m = popcnt64(BB_KNIGHT_ATK[sq] & ~b_occ);
+        uint64_t atk = BB_KNIGHT_ATK[sq];
+        int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 4) * 5;
         if (BB_CHEBY_DIST[sq][wk] <= 2) ks_score -= 12;
+        if (atk & w_ring) { b_atk_cnt++; b_atk_wt += 2; b_ring_hits += popcnt64(atk & w_ring & ~w_occ); }
     }
 
     /* White Bishops */
@@ -202,9 +210,11 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score += bishop_psqt[r][f];
-        int m = popcnt64(bb_bishop_attacks(sq, all_occ) & ~w_occ);
+        uint64_t atk = bb_bishop_attacks(sq, all_occ);
+        int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 6) * 5;
         if (BB_CHEBY_DIST[sq][bk] <= 3) ks_score += 10;
+        if (atk & b_ring) { w_atk_cnt++; w_atk_wt += 2; w_ring_hits += popcnt64(atk & b_ring & ~b_occ); }
     }
 
     /* Black Bishops */
@@ -213,9 +223,11 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score -= bishop_psqt[7 - r][f];
-        int m = popcnt64(bb_bishop_attacks(sq, all_occ) & ~b_occ);
+        uint64_t atk = bb_bishop_attacks(sq, all_occ);
+        int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 6) * 5;
         if (BB_CHEBY_DIST[sq][wk] <= 3) ks_score -= 10;
+        if (atk & w_ring) { b_atk_cnt++; b_atk_wt += 2; b_ring_hits += popcnt64(atk & w_ring & ~w_occ); }
     }
 
     /* White Rooks */
@@ -227,8 +239,10 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
             pos_score += ((bp & BB_FILE_MASK[f]) == 0) ? 24 : 12;
         }
         if (r == 6) pos_score += 36;
-        int m = popcnt64(bb_rook_attacks(sq, all_occ) & ~w_occ);
+        uint64_t atk = bb_rook_attacks(sq, all_occ);
+        int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 7) * 3;
+        if (atk & b_ring) { w_atk_cnt++; w_atk_wt += 3; w_ring_hits += popcnt64(atk & b_ring & ~b_occ); }
     }
 
     /* Black Rooks */
@@ -240,26 +254,32 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
             pos_score -= ((wp & BB_FILE_MASK[f]) == 0) ? 24 : 12;
         }
         if (r == 1) pos_score -= 36;
-        int m = popcnt64(bb_rook_attacks(sq, all_occ) & ~b_occ);
+        uint64_t atk = bb_rook_attacks(sq, all_occ);
+        int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 7) * 3;
+        if (atk & w_ring) { b_atk_cnt++; b_atk_wt += 3; b_ring_hits += popcnt64(atk & w_ring & ~w_occ); }
     }
 
     /* White Queens */
     bb = b->bb[WQ];
     while (bb) {
         int sq = pop_lsb(&bb);
-        int m = popcnt64(bb_queen_attacks(sq, all_occ) & ~w_occ);
+        uint64_t atk = bb_queen_attacks(sq, all_occ);
+        int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 12) * 2;
         if (BB_CHEBY_DIST[sq][bk] <= 3) ks_score += 20;
+        if (atk & b_ring) { w_atk_cnt++; w_atk_wt += 5; w_ring_hits += popcnt64(atk & b_ring & ~b_occ); }
     }
 
     /* Black Queens */
     bb = b->bb[BQ];
     while (bb) {
         int sq = pop_lsb(&bb);
-        int m = popcnt64(bb_queen_attacks(sq, all_occ) & ~b_occ);
+        uint64_t atk = bb_queen_attacks(sq, all_occ);
+        int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 12) * 2;
         if (BB_CHEBY_DIST[sq][wk] <= 3) ks_score -= 20;
+        if (atk & w_ring) { b_atk_cnt++; b_atk_wt += 5; b_ring_hits += popcnt64(atk & w_ring & ~w_occ); }
     }
 
     /* White King */
@@ -297,6 +317,19 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
                 }
             }
             ks_score -= (((shield * phase) / 256) * king_w) / 10;
+        }
+    }
+
+    if (phase > 0) {
+        if (b->piece_counts[WQ] > 0 && (w_atk_cnt >= 2 || w_ring_hits >= 3)) {
+            int danger = (w_atk_wt * w_atk_wt) + w_ring_hits * 8;
+            if (danger > 280) danger = 280;
+            ks_score += (danger * phase) / 256;
+        }
+        if (b->piece_counts[BQ] > 0 && (b_atk_cnt >= 2 || b_ring_hits >= 3)) {
+            int danger = (b_atk_wt * b_atk_wt) + b_ring_hits * 8;
+            if (danger > 280) danger = 280;
+            ks_score -= (danger * phase) / 256;
         }
     }
 
