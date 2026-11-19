@@ -5,6 +5,9 @@
 
 #define PAWN_TT_SIZE 65536
 #define PAWN_TT_MASK (PAWN_TT_SIZE - 1)
+#define DARK_SQ_BB 0xAA55AA55AA55AA55ULL
+#define CRAMP_W_BB 0x00003C0000000000ULL
+#define CRAMP_B_BB 0x00000000003C0000ULL
 
 typedef struct {
     uint64_t key_xor;
@@ -213,6 +216,9 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         uint64_t atk = bb_bishop_attacks(sq, all_occ);
         int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 6) * 5;
+        if (m <= 2) mob_score -= 16;
+        uint64_t same_col = ((1ULL << sq) & DARK_SQ_BB) ? DARK_SQ_BB : ~DARK_SQ_BB;
+        pstr_score -= popcnt64(wp & same_col) * 4;
         if (BB_CHEBY_DIST[sq][bk] <= 3) ks_score += 10;
         if (atk & b_ring) { w_atk_cnt++; w_atk_wt += 2; w_ring_hits += popcnt64(atk & b_ring & ~b_occ); }
     }
@@ -226,6 +232,9 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         uint64_t atk = bb_bishop_attacks(sq, all_occ);
         int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 6) * 5;
+        if (m <= 2) mob_score += 16;
+        uint64_t same_col = ((1ULL << sq) & DARK_SQ_BB) ? DARK_SQ_BB : ~DARK_SQ_BB;
+        pstr_score += popcnt64(bp & same_col) * 4;
         if (BB_CHEBY_DIST[sq][wk] <= 3) ks_score -= 10;
         if (atk & w_ring) { b_atk_cnt++; b_atk_wt += 2; b_ring_hits += popcnt64(atk & w_ring & ~w_occ); }
     }
@@ -242,6 +251,7 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         uint64_t atk = bb_rook_attacks(sq, all_occ);
         int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 7) * 3;
+        if (m <= 2) mob_score -= 20;
         if (atk & b_ring) { w_atk_cnt++; w_atk_wt += 3; w_ring_hits += popcnt64(atk & b_ring & ~b_occ); }
     }
 
@@ -257,6 +267,7 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         uint64_t atk = bb_rook_attacks(sq, all_occ);
         int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 7) * 3;
+        if (m <= 2) mob_score += 20;
         if (atk & w_ring) { b_atk_cnt++; b_atk_wt += 3; b_ring_hits += popcnt64(atk & w_ring & ~w_occ); }
     }
 
@@ -332,6 +343,9 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
             ks_score -= (danger * phase) / 256;
         }
     }
+
+    pos_score += popcnt64(wp & CRAMP_W_BB) * 20;
+    pos_score -= popcnt64(bp & CRAMP_B_BB) * 20;
 
     score += (pos_score * cent_w) / 10;
     score += (mob_score * mob_w) / 4;
