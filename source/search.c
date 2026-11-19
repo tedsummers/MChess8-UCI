@@ -640,11 +640,11 @@ static void run_helper_search(WorkerCtx *w) {
             score = alphabeta(&w->b, w->cfg, &w->st, d, alpha, beta, 0, true);
             if (w->st.stop || __atomic_load_n(&g_smp_stop, __ATOMIC_RELAXED)) break;
             if (score <= alpha) {
-                alpha = (delta >= 2000) ? -INF_SCORE : (alpha - delta);
-                delta *= 2;
+                alpha = (delta >= 400) ? -INF_SCORE : (alpha - delta);
+                delta *= 3;
             } else if (score >= beta) {
-                beta = (delta >= 2000) ? INF_SCORE : (beta + delta);
-                delta *= 2;
+                beta = (delta >= 400) ? INF_SCORE : (beta + delta);
+                delta *= 3;
             } else {
                 break;
             }
@@ -853,11 +853,11 @@ void search_go(Board *b, const EngineSettings *cfg, SearchState *st) {
                 if (st->pv_len[0] >= 2) st->ponder_move = st->pv[0][1];
             }
             if (score <= alpha) {
-                alpha = (delta >= 2000) ? -INF_SCORE : (alpha - delta);
-                delta *= 2;
+                alpha = (delta >= 400) ? -INF_SCORE : (alpha - delta);
+                delta *= 3;
             } else if (score >= beta) {
-                beta = (delta >= 2000) ? INF_SCORE : (beta + delta);
-                delta *= 2;
+                beta = (delta >= 400) ? INF_SCORE : (beta + delta);
+                delta *= 3;
             } else {
                 break;
             }

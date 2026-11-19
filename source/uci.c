@@ -266,6 +266,7 @@ static void handle_go(Board *b, const EngineSettings *cfg, char *line) {
         int64_t t = (b->side == WHITE) ? wtime : btime;
         int64_t inc = (b->side == WHITE) ? winc : binc;
         int mtg = movestogo > 0 ? movestogo : 30;
+        if (b->game_ply <= 24 && movestogo == 30 && t >= 30000) mtg = 38;
         if (inc == 0 && t < 30000) mtg = (t < 10000) ? 50 : 40;
         int64_t alloc = t / mtg + inc / 2;
         int64_t max_safe = (t > 60) ? (t - 40) : (t / 3);
