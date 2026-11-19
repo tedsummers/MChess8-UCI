@@ -65,6 +65,27 @@
       <p>Extract <code>MChess8_UCI_Package.zip</code>, keep the binary alongside <code>PRBOOK/</code>, <code>TB/</code>, and <code>SETTINGS.M80</code>, and register the binary for your OS as a UCI engine in Arena, CuteChess, BanksiaGUI, Scid, or ChessBase.</p>
     </section>
 
+    <section>
+      <h2>Compiling from Source</h2>
+      <p>All C11 source files and the <code>Makefile</code> are in <code>source/</code>. Requirements: <code>gcc</code> (for Linux) and optionally <code>zig</code> (for cross-compiling Windows and macOS targets from Linux).</p>
+      <pre style="background:#0b1117;padding:0.9rem 1rem;border-radius:6px;overflow-x:auto;font-size:0.88rem;line-height:1.5;"><code>cd source
+
+# Linux 64-bit (recommended)
+make linux64
+
+# Linux 32-bit (requires 32-bit multilib gcc)
+make
+
+# Windows 64-bit &amp; 32-bit (via zig cc)
+make win64
+make win32
+
+# macOS Intel &amp; Apple Silicon (via zig cc)
+make macos</code></pre>
+      <p>On macOS natively with Xcode/Clang, you can also compile directly:</p>
+      <pre style="background:#0b1117;padding:0.9rem 1rem;border-radius:6px;overflow-x:auto;font-size:0.88rem;line-height:1.5;"><code>clang -O2 -Wall -Wextra -std=c11 -pthread -o mchess8_uci uci.c board.c movegen.c eval.c tt.c book.c tb.c search.c tables.c bitboard.c</code></pre>
+    </section>
+
     <footer>MChess Pro 8.0 UCI &mdash; Native C Port of M-Chess Professional 8.0</footer>
   </div>
 </body>
