@@ -9,7 +9,8 @@ Contents:
   mchess8_uci_mac_arm64 - 64-bit macOS Apple Silicon (arm64) binary
   mchess8_uci_mac_intel - 64-bit macOS Intel (x86_64) binary
   SETTINGS.M80          - Default MChess Pro 8.0 engine settings
-  PRBOOK/               - Opening Book (PRBOOK.M80 + M80KEY.000..00F)
+  PRBOOK/               - Original 1998 Opening Book (PRBOOK.M80 + M80KEY.000..00F)
+  PRBOOK_MODERN/        - Modern GM/Engine Opening Book (128,495 positions)
   TB/                   - Complete 3- and 4-piece Endgame Tablebases (.TBW/.TBB)
   MANUAL.md             - Full user manual for features, modes, and options
   WHATS_NEW.md          - Summary of changes vs. original M-Chess Pro 8.0 (1998)

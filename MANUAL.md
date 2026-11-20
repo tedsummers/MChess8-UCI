@@ -55,6 +55,9 @@ MChess Pro 8.0 UCI reads the original `PRBOOK.M80` and `M80KEY.000`–`M80KEY.00
 - **`DeterministicBook`** (`check`, default: `false`)
   When `true`, always selects the highest-weighted book move deterministically (useful for reproducible testing).
 
+### Included Modern Book (`PRBOOK_MODERN/`) & Custom Book Builder
+In addition to the original 1998 `PRBOOK/` (`389,947` positions), the package includes **`PRBOOK_MODERN/`** (`1.4 MB`, `128,495` unique positions, `176,236` move entries) built from modern GM/engine theory (`Tournament` mode plays `1.d4`/`1.e4`/`1.c4`/`1.Nf3`, Ruy Lopez/Italian, Open Sicilian, Catalan, Nimzo-Indian, QGD, Caro-Kann, and French; `Wide`/`Broad` modes add `28,803` sidelines). Point `BookPath` to `PRBOOK_MODERN` to use it, or compile `source/build_book.c` to build custom `.M80` books from weighted line lists.
+
 ---
 
 ## 4. Endgame Tablebases (`TB/`)

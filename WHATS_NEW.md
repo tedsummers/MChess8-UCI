@@ -15,7 +15,7 @@
 | **Transposition Table** | DOS memory-limited hash | Up to **4096 MB** (`Hash` `1`–`4096`, default `512` MB), **4-bucket lockless XOR** with generation aging |
 | **Search & Pruning** | Classic 1998 alpha-beta + NMP | Added **Staged TT-First Execution**, **Aspiration Windows**, **LMR**, **X-ray Bitboard SEE**, **RFP**, **Futility**, **LMP**, **Razoring**, **Countermoves**, and **`improving`** pruning |
 | **Endgame Tablebases** | External 3/4-piece `.TBW`/`.TBB` | Full **35-set (70-file)** 3- and 4-piece DTM `TB/` bundle included, with cached handles & lock-free POSIX `pread()` |
-| **Opening Book** | `PRBOOK.M80` (`Off`/`Tournament`/`Wide`/`Broad`) | Same `PRBOOK/` + modes, plus `DeterministicBook` option and **`Tournament` default** |
+| **Opening Book** | `PRBOOK.M80` (`Off`/`Tournament`/`Wide`/`Broad`) | Original `PRBOOK/` + modern `PRBOOK_MODERN/` (`128,495` positions), `DeterministicBook`, `build_book.c`, and **`Tournament` default** |
 | **Playing Style** | `SETTINGS.M80` sliders (`5/4/1/4/5/2`) | Same sliders & MChess Pro 8 eval character with **smooth game-phase interpolation** |
 
 ---
