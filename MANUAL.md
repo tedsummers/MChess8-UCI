@@ -102,7 +102,7 @@ At startup, the engine loads defaults from `SETTINGS.M80` if present. All MChess
 | **`NullMove`** | `check` | `true` | `true`/`false` | Enables null-move pruning (disabled automatically in check, PV nodes, and low-material endgames to avoid zugzwang errors). |
 | **`Extensions`** | `check` | `true` | `true`/`false` | Enables check extensions (+1 ply when in check, capped at `ply < 24`). |
 
-The search also uses staged TT-first move execution, aspiration windows, Late Move Reductions (LMR), full bitboard X-ray SEE, Reverse Futility / Futility / Late Move Pruning, Razoring, killer/countermove/history ordering, `improving`-aware pruning, endgame null-move verification search, sudden-death low-clock protection, and emits `info depth ... currmove <move> currmovenumber <n>` during root searches (`depth >= 6` or `elapsed >= 200 ms`).
+The search also uses staged TT-first move execution, aspiration windows, Late Move Reductions (LMR), full bitboard X-ray SEE, Reverse Futility / Futility / Late Move Pruning, Razoring, killer/countermove/history ordering, `improving`-aware pruning, endgame null-move verification search, calibrated UCI time pacing (`50%` soft bound / `125%` hard cap with sudden-death low-clock protection), and emits `info depth ... currmove <move> currmovenumber <n>` during root searches (`depth >= 6` or `elapsed >= 200 ms`).
 
 ---
 
