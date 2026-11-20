@@ -21,6 +21,8 @@ static void tb_unlock(void) { LeaveCriticalSection(&g_tb_lock); }
 #else
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 static pthread_mutex_t g_tb_lock = PTHREAD_MUTEX_INITIALIZER;
 static void tb_lock(void) { pthread_mutex_lock(&g_tb_lock); }
 static void tb_unlock(void) { pthread_mutex_unlock(&g_tb_lock); }
@@ -31,6 +33,10 @@ static char g_tb_dir[512] = "TB";
 typedef struct {
     char key[24];
     FILE *fp;
+#ifndef _WIN32
+    const int8_t *mapped;
+    size_t map_size;
+#endif
     int tried;
 } TBHandle;
 
@@ -42,6 +48,13 @@ void tb_init(const char *dir) {
         tb_lock();
         if (strcmp(g_tb_dir, dir) != 0) {
             for (int i = 0; i < g_tb_handle_cnt; i++) {
+#ifndef _WIN32
+                if (g_tb_handles[i].mapped) {
+                    munmap((void *)g_tb_handles[i].mapped, g_tb_handles[i].map_size);
+                    g_tb_handles[i].mapped = NULL;
+                    g_tb_handles[i].map_size = 0;
+                }
+#endif
                 if (g_tb_handles[i].fp) fclose(g_tb_handles[i].fp);
             }
             g_tb_handle_cnt = 0;
@@ -51,25 +64,41 @@ void tb_init(const char *dir) {
     }
 }
 
-static FILE *get_tb_file(const char *name, const char *ext) {
+static TBHandle *get_tb_handle(const char *name, const char *ext) {
     char key[24];
     snprintf(key, sizeof(key), "%s%s", name, ext);
     for (int i = 0; i < g_tb_handle_cnt; i++) {
         if (strcmp(g_tb_handles[i].key, key) == 0) {
-            return g_tb_handles[i].fp;
+            return &g_tb_handles[i];
         }
     }
     char path[600];
     snprintf(path, sizeof(path), "%s/%s%s", g_tb_dir, name, ext);
     FILE *f = fopen(path, "rb");
     if (g_tb_handle_cnt < 80) {
-        snprintf(g_tb_handles[g_tb_handle_cnt].key, sizeof(g_tb_handles[g_tb_handle_cnt].key), "%s", key);
-        g_tb_handles[g_tb_handle_cnt].fp = f;
-        g_tb_handles[g_tb_handle_cnt].tried = 1;
+        TBHandle *h = &g_tb_handles[g_tb_handle_cnt];
+        snprintf(h->key, sizeof(h->key), "%s", key);
+        h->fp = f;
+#ifndef _WIN32
+        h->mapped = NULL;
+        h->map_size = 0;
+        if (f) {
+            struct stat st;
+            if (fstat(fileno(f), &st) == 0 && st.st_size > 0) {
+                void *p = mmap(NULL, (size_t)st.st_size, PROT_READ, MAP_PRIVATE, fileno(f), 0);
+                if (p != MAP_FAILED) {
+                    h->mapped = (const int8_t *)p;
+                    h->map_size = (size_t)st.st_size;
+                }
+            }
+        }
+#endif
+        h->tried = 1;
         __atomic_store_n(&g_tb_handle_cnt, g_tb_handle_cnt + 1, __ATOMIC_RELEASE);
-        return f;
+        return h;
     }
-    return f;
+    if (f) fclose(f);
+    return NULL;
 }
 
 static const char pc_letters[7] = { ' ', 'P', 'N', 'B', 'R', 'Q', 'K' };
@@ -166,31 +195,38 @@ bool tb_probe(const Board *b, int ply, int *out_score) {
     int8_t v = 127;
 #ifdef _WIN32
     tb_lock();
-    FILE *f = get_tb_file(name, ext);
+    TBHandle *h = get_tb_handle(name, ext);
+    FILE *f = h ? h->fp : NULL;
     if (f && fseek(f, (long)idx, SEEK_SET) == 0) {
         if (fread(&v, 1, 1, f) != 1) v = 127;
     }
     tb_unlock();
     if (!f) return false;
 #else
-    /* Fast lock-free lookup if already opened; only lock on first open */
-    FILE *f = NULL;
+    /* Fast lock-free lookup into mmap'd TB memory; only lock on first open */
+    TBHandle *h = NULL;
     char key[24];
     snprintf(key, sizeof(key), "%s%s", name, ext);
     int cnt = __atomic_load_n(&g_tb_handle_cnt, __ATOMIC_ACQUIRE);
     for (int i = 0; i < cnt; i++) {
         if (strcmp(g_tb_handles[i].key, key) == 0) {
-            f = g_tb_handles[i].fp;
+            h = &g_tb_handles[i];
             break;
         }
     }
-    if (!f && cnt < 80) {
+    if (!h && cnt < 80) {
         tb_lock();
-        f = get_tb_file(name, ext);
+        h = get_tb_handle(name, ext);
         tb_unlock();
     }
-    if (!f) return false;
-    if (pread(fileno(f), &v, 1, (off_t)idx) != 1) v = 127;
+    if (!h) return false;
+    if (h->mapped) {
+        if (idx < h->map_size) v = h->mapped[idx];
+    } else if (h->fp) {
+        if (pread(fileno(h->fp), &v, 1, (off_t)idx) != 1) v = 127;
+    } else {
+        return false;
+    }
 #endif
 
     if (v < -126 || v > 126) return false;
