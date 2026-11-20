@@ -187,6 +187,12 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score += knight_psqt[r][f];
+        if ((r == 4 || r == 5) && f >= 1 && f <= 6 &&
+            (bp & BB_PASSED_MASK[0][sq] & BB_ADJ_FILES[f]) == 0) {
+            int center = (f >= 2 && f <= 5);
+            if (BB_PAWN_ATK[1][sq] & wp) pos_score += center ? 20 : 14;
+            else pos_score += center ? 10 : 6;
+        }
         uint64_t atk = BB_KNIGHT_ATK[sq];
         int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 4) * 5;
@@ -200,6 +206,12 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score -= knight_psqt[7 - r][f];
+        if ((r == 2 || r == 3) && f >= 1 && f <= 6 &&
+            (wp & BB_PASSED_MASK[1][sq] & BB_ADJ_FILES[f]) == 0) {
+            int center = (f >= 2 && f <= 5);
+            if (BB_PAWN_ATK[0][sq] & bp) pos_score -= center ? 20 : 14;
+            else pos_score -= center ? 10 : 6;
+        }
         uint64_t atk = BB_KNIGHT_ATK[sq];
         int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 4) * 5;
@@ -213,6 +225,11 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score += bishop_psqt[r][f];
+        if ((r == 4 || r == 5) && f >= 1 && f <= 6 &&
+            (bp & BB_PASSED_MASK[0][sq] & BB_ADJ_FILES[f]) == 0 &&
+            (BB_PAWN_ATK[1][sq] & wp)) {
+            pos_score += 16;
+        }
         uint64_t atk = bb_bishop_attacks(sq, all_occ);
         int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 6) * 5;
@@ -229,6 +246,11 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         int sq = pop_lsb(&bb);
         int r = sq >> 3, f = sq & 7;
         pos_score -= bishop_psqt[7 - r][f];
+        if ((r == 2 || r == 3) && f >= 1 && f <= 6 &&
+            (wp & BB_PASSED_MASK[1][sq] & BB_ADJ_FILES[f]) == 0 &&
+            (BB_PAWN_ATK[0][sq] & bp)) {
+            pos_score -= 16;
+        }
         uint64_t atk = bb_bishop_attacks(sq, all_occ);
         int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 6) * 5;
@@ -247,7 +269,10 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         if ((wp & BB_FILE_MASK[f]) == 0) {
             pos_score += ((bp & BB_FILE_MASK[f]) == 0) ? 24 : 12;
         }
-        if (r == 6) pos_score += 36;
+        if (r == 6) {
+            pos_score += 42;
+            if ((bk >> 3) == 7 || (bp & BB_RANK_MASK[6])) pos_score += 12;
+        }
         uint64_t atk = bb_rook_attacks(sq, all_occ);
         int m = popcnt64(atk & ~w_occ);
         mob_score += (m - 7) * 3;
@@ -263,7 +288,10 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         if ((bp & BB_FILE_MASK[f]) == 0) {
             pos_score -= ((wp & BB_FILE_MASK[f]) == 0) ? 24 : 12;
         }
-        if (r == 1) pos_score -= 36;
+        if (r == 1) {
+            pos_score -= 42;
+            if ((wk >> 3) == 0 || (wp & BB_RANK_MASK[1])) pos_score -= 12;
+        }
         uint64_t atk = bb_rook_attacks(sq, all_occ);
         int m = popcnt64(atk & ~b_occ);
         mob_score -= (m - 7) * 3;
@@ -306,6 +334,14 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
                     if (b->squares[wk + 8 + df] == WP) shield += 14;
                     else if (b->squares[wk + 16 + df] == WP) shield += 6;
                     else shield -= 12;
+                    if ((wp & BB_FILE_MASK[ff]) == 0) shield -= 12;
+                    if ((bp & BB_FILE_MASK[ff]) == 0 && b->piece_counts[BR] > 0) {
+                        shield -= 14;
+                        if (b->bb[BR] & BB_FILE_MASK[ff]) shield -= 18;
+                    }
+                    if (bp & BB_FILE_MASK[ff] & (BB_RANK_MASK[2] | BB_RANK_MASK[3])) {
+                        shield -= 14;
+                    }
                 }
             }
             ks_score += (((shield * phase) / 256) * king_w) / 10;
@@ -325,6 +361,14 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
                     if (b->squares[bk - 8 + df] == BP) shield += 14;
                     else if (b->squares[bk - 16 + df] == BP) shield += 6;
                     else shield -= 12;
+                    if ((bp & BB_FILE_MASK[ff]) == 0) shield -= 12;
+                    if ((wp & BB_FILE_MASK[ff]) == 0 && b->piece_counts[WR] > 0) {
+                        shield -= 14;
+                        if (b->bb[WR] & BB_FILE_MASK[ff]) shield -= 18;
+                    }
+                    if (wp & BB_FILE_MASK[ff] & (BB_RANK_MASK[4] | BB_RANK_MASK[5])) {
+                        shield -= 14;
+                    }
                 }
             }
             ks_score -= (((shield * phase) / 256) * king_w) / 10;
@@ -332,15 +376,17 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
     }
 
     if (phase > 0) {
-        if (b->piece_counts[WQ] > 0 && (w_atk_cnt >= 2 || w_ring_hits >= 3)) {
+        if ((b->piece_counts[WQ] > 0 || b->w_mat >= 1100) && (w_atk_cnt >= 2 || w_ring_hits >= 3)) {
             int danger = (w_atk_wt * w_atk_wt) + w_ring_hits * 8;
             if (danger > 280) danger = 280;
-            ks_score += (danger * phase) / 256;
+            int scale = (b->piece_counts[WQ] > 0) ? 256 : 128;
+            ks_score += (((danger * phase) / 256) * scale) / 256;
         }
-        if (b->piece_counts[BQ] > 0 && (b_atk_cnt >= 2 || b_ring_hits >= 3)) {
+        if ((b->piece_counts[BQ] > 0 || b->b_mat >= 1100) && (b_atk_cnt >= 2 || b_ring_hits >= 3)) {
             int danger = (b_atk_wt * b_atk_wt) + b_ring_hits * 8;
             if (danger > 280) danger = 280;
-            ks_score -= (danger * phase) / 256;
+            int scale = (b->piece_counts[BQ] > 0) ? 256 : 128;
+            ks_score -= (((danger * phase) / 256) * scale) / 256;
         }
     }
 
