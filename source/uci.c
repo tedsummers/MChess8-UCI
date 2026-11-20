@@ -37,6 +37,8 @@ void settings_init_defaults(EngineSettings *cfg) {
 #else
     if (file_exists("PRBOOK/PRBOOK.M80"))
         snprintf(cfg->book_path, sizeof(cfg->book_path), "PRBOOK");
+    else if (file_exists("/home/idiot/MChess8/MChess8_UCI_Package/PRBOOK/PRBOOK.M80"))
+        snprintf(cfg->book_path, sizeof(cfg->book_path), "/home/idiot/MChess8/MChess8_UCI_Package/PRBOOK");
     else
         snprintf(cfg->book_path, sizeof(cfg->book_path), "/home/idiot/MChess8/MChess8/PRBOOK");
     if (file_exists("TB/KQK.TBW"))

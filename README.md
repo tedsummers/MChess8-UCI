@@ -1,6 +1,6 @@
 # MChess Pro 8.0 UCI
 
-Native cross-platform C11 UCI port of Marty Hirsch's 1998 **M-Chess Professional 8.0** (`MCP8.EXE`), powered by 64-bit Magic Bitboards, Lazy SMP (`Threads` 1–64), a 4-bucket lockless XOR transposition table (up to 4096 MB), original `PRBOOK/` + modern `PRBOOK_MODERN/` opening books (`128,495` positions), and full 35-set 3/4-piece DTM `TB/` endgame tablebases.
+Native cross-platform C11 UCI port of Marty Hirsch's 1998 **M-Chess Professional 8.0** (`MCP8.EXE`), powered by 64-bit Magic Bitboards, Lazy SMP (`Threads` 1–64), a 4-bucket lockless XOR transposition table (up to 4096 MB), default modern `PRBOOK/` (`128,495` positions) + original 1998 `PRBOOK_1998/` opening books, and full 35-set 3/4-piece DTM `TB/` endgame tablebases.
 
 MChess Pro 8.0 UCI plays roughly **150–250+ Elo stronger** than the original 1998 DOS program while preserving its opening book, 3/4-piece tablebases, and evaluation character.
 
