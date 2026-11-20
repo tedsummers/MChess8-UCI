@@ -90,10 +90,10 @@ static void check_stop(SearchState *st) {
                 st->infinite = 0;
                 int64_t now = now_ms();
                 int64_t alloc = st->alloc_ms > 0 ? st->alloc_ms : 500;
-                int64_t soft = (alloc * 6) / 10;
+                int64_t soft = alloc / 2;
                 if (soft < 1) soft = 1;
                 st->soft_time_ms = now + soft;
-                st->stop_time_ms = now + (alloc * 3) / 2;
+                st->stop_time_ms = now + (alloc * 5) / 4;
             } else if (strncmp(buf, "isready", 7) == 0) {
                 printf("readyok\n");
                 fflush(stdout);

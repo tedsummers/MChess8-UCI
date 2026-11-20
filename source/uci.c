@@ -265,9 +265,9 @@ static void handle_go(Board *b, const EngineSettings *cfg, char *line) {
     } else if ((b->side == WHITE && wtime > 0) || (b->side == BLACK && btime > 0)) {
         int64_t t = (b->side == WHITE) ? wtime : btime;
         int64_t inc = (b->side == WHITE) ? winc : binc;
-        int mtg = (movestogo > 0 && movestogo != 30) ? movestogo : 40;
-        if (b->game_ply <= 24 && movestogo == 30 && t >= 30000) mtg = 48;
-        if (inc == 0 && t < 30000) mtg = (t < 10000) ? 50 : 44;
+        int mtg = (movestogo > 0 && movestogo != 30) ? movestogo : 52;
+        if (b->game_ply <= 24 && movestogo == 30 && t >= 30000) mtg = 60;
+        if (inc == 0 && t < 30000) mtg = (t < 10000) ? 60 : 52;
         int64_t alloc = t / mtg + (inc * 7) / 10;
         int64_t max_safe = (t > 60) ? (t - 40) : (t / 3);
         int64_t min_alloc = (t < 2000) ? 5 : 20;
@@ -277,10 +277,10 @@ static void handle_go(Board *b, const EngineSettings *cfg, char *line) {
         if (alloc < 1) alloc = 1;
         st.alloc_ms = alloc;
         if (!st.ponder) {
-            int64_t soft = (alloc * 6) / 10;
+            int64_t soft = alloc / 2;
             if (soft < 1) soft = 1;
             st.soft_time_ms = now + soft;
-            int64_t hard = (alloc * 3) / 2;
+            int64_t hard = (alloc * 5) / 4;
             if (hard > max_safe) hard = max_safe;
             if (hard < alloc) hard = alloc;
             st.stop_time_ms = now + hard;
