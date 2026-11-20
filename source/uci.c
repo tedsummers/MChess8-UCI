@@ -219,6 +219,7 @@ static void handle_go(Board *b, const EngineSettings *cfg, char *line) {
     memset(&st, 0, sizeof(st));
     int64_t wtime = -1, btime = -1, winc = 0, binc = 0, movetime = -1;
     int movestogo = 30;
+    bool has_movestogo = false;
 
     char *tok = strtok(line + 2, " \t\r\n");
     while (tok) {
@@ -242,7 +243,10 @@ static void handle_go(Board *b, const EngineSettings *cfg, char *line) {
             if (tok) binc = atoll(tok);
         } else if (strcmp(tok, "movestogo") == 0) {
             tok = strtok(NULL, " \t\r\n");
-            if (tok) movestogo = atoi(tok);
+            if (tok) {
+                movestogo = atoi(tok);
+                if (movestogo > 0) has_movestogo = true;
+            }
         } else if (strcmp(tok, "nodes") == 0) {
             tok = strtok(NULL, " \t\r\n");
             if (tok) st.max_nodes = (uint64_t)atoll(tok);
@@ -265,9 +269,9 @@ static void handle_go(Board *b, const EngineSettings *cfg, char *line) {
     } else if ((b->side == WHITE && wtime > 0) || (b->side == BLACK && btime > 0)) {
         int64_t t = (b->side == WHITE) ? wtime : btime;
         int64_t inc = (b->side == WHITE) ? winc : binc;
-        int mtg = (movestogo > 0 && movestogo != 30) ? movestogo : 52;
-        if (b->game_ply <= 24 && movestogo == 30 && t >= 30000) mtg = 60;
-        if (inc == 0 && t < 30000) mtg = (t < 10000) ? 60 : 52;
+        int mtg = has_movestogo ? (movestogo + 1) : 52;
+        if (!has_movestogo && b->game_ply <= 24 && t >= 30000) mtg = 60;
+        if (!has_movestogo && inc == 0 && t < 30000) mtg = (t < 10000) ? 60 : 52;
         int64_t alloc = t / mtg + (inc * 7) / 10;
         int64_t max_safe = (t > 60) ? (t - 40) : (t / 3);
         int64_t min_alloc = (t < 2000) ? 5 : 20;
@@ -281,6 +285,9 @@ static void handle_go(Board *b, const EngineSettings *cfg, char *line) {
             if (soft < 1) soft = 1;
             st.soft_time_ms = now + soft;
             int64_t hard = (alloc * 5) / 4;
+            if (has_movestogo && movestogo >= 2 && hard > t / movestogo) {
+                hard = t / movestogo;
+            }
             if (hard > max_safe) hard = max_safe;
             if (hard < alloc) hard = alloc;
             st.stop_time_ms = now + hard;
