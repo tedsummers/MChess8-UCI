@@ -14,7 +14,7 @@
 | **CPU Threads** | Single-threaded (`1` core) | **Multi-threaded Lazy SMP** (`Threads` `1`–`64`) with persistent worker pool |
 | **Transposition Table** | DOS memory-limited hash | Up to **4096 MB** (`Hash` `1`–`4096`, default `512` MB), **4-bucket lockless XOR** with generation aging |
 | **Search & Pruning** | Classic 1998 alpha-beta + NMP | Added **Staged TT-First Execution**, **Aspiration Windows**, **LMR**, **X-ray Bitboard SEE**, **RFP**, **Futility**, **LMP**, **Razoring**, **Countermoves**, and **`improving`** pruning |
-| **Endgame Tablebases** | External 3/4-piece `.TBW`/`.TBB` | Full **35-set (70-file)** 3- and 4-piece DTM `TB/` bundle included, with cached handles & lock-free POSIX `pread()` |
+| **Endgame Tablebases** | External 3/4-piece `.TBW`/`.TBB` | Full **35-set (70-file)** 3- and 4-piece DTM `TB/` bundle included, with cached handles & lock-free POSIX `mmap()` |
 | **Opening Book** | `PRBOOK.M80` (`Off`/`Tournament`/`Wide`/`Broad`) | Default modern `PRBOOK/` (`128,495` positions) + preserved 1998 `PRBOOK_1998/`, `DeterministicBook`, `build_book.c`, and **`Tournament` default** |
 | **Playing Style** | `SETTINGS.M80` sliders (`5/4/1/4/5/2`) | Same sliders & MChess Pro 8 eval character with **smooth game-phase interpolation** |
 
@@ -35,7 +35,7 @@
 
 ### 3. Multi-Threaded Lazy SMP (`Threads` Option)
 - Added `Threads` (`1`–`64`, default `1`) backed by a persistent, cache-line-aligned (`_Alignas(64)`) worker pool.
-- Uses a 16-byte lockless XOR transposition table (`tt.c`) and lock-free `pread()` tablebase reads on Linux/macOS (`tb.c`) so threads scale cleanly (reaching **4.25M nps** at `depth 12` on 8 threads, **3.61M nps** on 4 threads, and **1.05M nps** at `depth 11` on 1 thread on Kiwipete).
+- Uses a 16-byte lockless XOR transposition table (`tt.c`) and lock-free `mmap()` tablebase reads on Linux/macOS (`tb.c`) so threads scale cleanly (reaching **4.25M nps** at `depth 12` on 8 threads, **3.61M nps** on 4 threads, and **1.21M nps** at `depth 11` on 1 thread on Kiwipete, with `-O3 -flto -mpopcnt` builds).
 
 ### 4. Modern Search & Tournament-Tuned Defaults
 - Added **staged TT-first move execution** (`is_pseudo_legal()` tries `tt_move` before generating or scoring moves, skipping `gen_pseudo_moves()`/`score_moves()` on TT beta cutoffs) and skips redundant `evaluate()` calls on PV nodes.

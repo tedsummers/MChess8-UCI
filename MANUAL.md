@@ -62,7 +62,7 @@ By default, **`PRBOOK/`** now ships with the modern GM/engine book (`1.4 MB`, `1
 
 ## 4. Endgame Tablebases (`TB/`)
 
-The engine probes MChess Pro 8.0's proprietary **Distance-to-Mate (DTM)** tablebases (`.TBW` when the stronger side is to move, `.TBB` when the weaker side is to move) during both main search and quiescence search whenever `total_pieces <= 4` (with no en passant or castling rights active).
+The engine probes MChess Pro 8.0's proprietary **Distance-to-Mate (DTM)** tablebases (`.TBW` when the stronger side is to move, `.TBB` when the weaker side is to move) via zero-syscall `mmap()` reads on Linux/macOS during both main search and quiescence search whenever `total_pieces <= 4` (with no en passant or castling rights active).
 
 ### Included 3- and 4-Piece Sets (35 Sets / 70 Files)
 - **3-Piece (5 sets):** `KQK`, `KRK`, `KBK`, `KNK`, `KPK`
