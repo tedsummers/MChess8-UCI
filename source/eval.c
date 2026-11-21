@@ -67,8 +67,9 @@ static const int passed_bonus[8] = { 0, 15, 25, 45, 75, 120, 180, 0 };
 int evaluate(const Board *b, const EngineSettings *cfg) {
     int score = b->mat_balance;
 
-    if (b->piece_counts[WB] >= 2) score += 80;
-    if (b->piece_counts[BB] >= 2) score -= 80;
+    int bp_val = cfg->classic_style ? 80 : 120;
+    if (b->piece_counts[WB] >= 2) score += bp_val;
+    if (b->piece_counts[BB] >= 2) score -= bp_val;
 
     int total_non_pawn = b->w_mat + b->b_mat;
     int phase = (total_non_pawn * 256) / 6200;
@@ -397,11 +398,20 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
     pos_score += popcnt64(wp & CRAMP_W_BB) * 20;
     pos_score -= popcnt64(bp & CRAMP_B_BB) * 20;
 
-    score += (pos_score * cent_w) / 10;
-    score += (mob_score * mob_w) / 4;
-    score += (pstr_score * pstr_w) / 5;
-    score += (pass_score * pass_w) / 10;
-    score += (ks_score * agg_w) / 10;
+    if (cfg->classic_style) {
+        score += (pos_score * cent_w) / 10;
+        score += (mob_score * mob_w) / 4;
+        score += (pstr_score * pstr_w) / 5;
+        score += (pass_score * pass_w) / 10;
+        score += (ks_score * agg_w) / 10;
+    } else {
+        /* Stockfish Texel-tuned modern scaling */
+        score += (pos_score * cent_w * 2) / 10;
+        score += (mob_score * mob_w * 5) / 8;
+        score += (pstr_score * pstr_w * 3) / 25;
+        score += (pass_score * pass_w * 3) / 20;
+        score += (ks_score * agg_w * 3) / 20;
+    }
 
     if (b->total_pawns == 0) {
         if (b->w_mat <= 700 && b->b_mat <= 700 && abs_i(score) < 800) {
@@ -420,5 +430,7 @@ int evaluate(const Board *b, const EngineSettings *cfg) {
         }
     }
 
-    return (b->side == WHITE) ? score : -score;
+    int res = (b->side == WHITE) ? score : -score;
+    if (!cfg->classic_style) res += 24; /* Modern tempo bonus (+12 cp) */
+    return res;
 }
