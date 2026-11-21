@@ -104,6 +104,7 @@ At startup, the engine loads defaults from `SETTINGS.M80` if present. All MChess
 | **`Ponder`** | `check` | `true` | `true`/`false` | Enables thinking on the opponent's time. Outputs `bestmove <move> ponder <reply>` and supports `go ponder`, `ponderhit`, and `stop`. |
 | **`NullMove`** | `check` | `true` | `true`/`false` | Enables null-move pruning (disabled automatically in check, PV nodes, and low-material endgames to avoid zugzwang errors). |
 | **`Extensions`** | `check` | `true` | `true`/`false` | Enables check extensions (+1 ply when in check, capped at `ply < 24`). |
+| **`ClassicStyle`** | `check` | `false` | `true`/`false` | When `true`, dials back modern pruning (LMR, RFP, Futility/LMP, Razoring) and added eval terms to match 1990s MChess move choices (`false` uses the stronger modern engine). |
 
 The search also uses staged TT-first move execution, aspiration windows, Late Move Reductions (LMR), full bitboard X-ray SEE, Reverse Futility / Futility / Late Move Pruning, Razoring, killer/countermove/history ordering, `improving`-aware pruning, endgame null-move verification search, calibrated UCI time pacing (`50%` soft bound / `125%` hard cap with sudden-death low-clock protection), and emits `info depth ... currmove <move> currmovenumber <n>` during root searches (`depth >= 6` or `elapsed >= 200 ms`).
 

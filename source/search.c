@@ -400,7 +400,7 @@ static int alphabeta(Board *b, const EngineSettings *cfg, SearchState *st, int d
     int static_eval = (in_chk || is_pv) ? INF_SCORE : evaluate(b, cfg);
     if (ply < MAX_PLY) st->eval_stack[ply] = static_eval;
     bool improving = (!in_chk && !is_pv && ply >= 2 && st->eval_stack[ply - 2] != INF_SCORE && static_eval > st->eval_stack[ply - 2]);
-    bool can_prune = (!in_chk && !is_pv && own_mat > 0 && beta < MATE_SCORE - 500 && beta > -MATE_SCORE + 500);
+    bool can_prune = (!cfg->classic_style && !in_chk && !is_pv && own_mat > 0 && beta < MATE_SCORE - 500 && beta > -MATE_SCORE + 500);
     if (can_prune && depth <= 3) {
         /* Reverse futility pruning (static null move) */
         int rfp_margin = (improving ? 180 : 140) * depth;
@@ -520,7 +520,7 @@ static int alphabeta(Board *b, const EngineSettings *cfg, SearchState *st, int d
             score = -alphabeta(b, cfg, st, depth - 1, -beta, -alpha, ply + 1, true);
         } else {
             int red = 0;
-            if (depth >= 3 && legal_cnt >= 3 && !in_chk && is_quiet && !gives_chk) {
+            if (!cfg->classic_style && depth >= 3 && legal_cnt >= 3 && !in_chk && is_quiet && !gives_chk) {
                 if (!is_pv || legal_cnt >= 6) {
                     red = 1 + (depth >= 5 && legal_cnt >= 6) + (depth >= 8 && legal_cnt >= 12);
                     if (!improving && legal_cnt >= 4) red++;

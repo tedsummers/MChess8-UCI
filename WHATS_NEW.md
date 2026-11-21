@@ -41,6 +41,7 @@
 - Added **staged TT-first move execution** (`is_pseudo_legal()` tries `tt_move` before generating or scoring moves, skipping `gen_pseudo_moves()`/`score_moves()` on TT beta cutoffs) and skips redundant `evaluate()` calls on PV nodes.
 - Added **endgame & time-management upgrades**: connected/blockaded passed-pawn terms, rook-behind-passer, enemy king distance from passed pawns, semi-open isolated-pawn penalty, endgame null-move verification search, calibrated UCI time pacing (`52`–`60` moves-to-go baseline, `50%` soft bound, `125%` hard cap, and `ponderhit` pacing), and sudden-death low-clock scaling (`+18 =6 -6` / `70.0%` in 30 `5+0` games vs. BikJump v3.1, plus `+12 =17 -11` / `51.2%` in post-match endgame A/B testing).
 - Combined Aspiration Windows, LMR, full bitboard X-ray SEE, Reverse Futility / Futility / Late Move Pruning, Razoring, killer/countermove/aged-history move ordering, and `improving`-aware pruning—raising average 300 ms/pos search depth from **`6.20`** to **`12.20`** plies on the 5-position benchmark (and reaching **2.00M nps** single-threaded in endgames).
+- Added optional **`ClassicStyle`** UCI toggle (`false` default for full modern strength; `true` dials back modern pruning/eval additions to match 1990s MChess move choices, raising depth-6 agreement on historical tournament games from `53.4%` to `58.4%`).
 - Startup defaults (`SETTINGS.M80` and built-in defaults) are tuned for tournament play based on self-play testing:
   - `Hash = 512` MB (max `4096` MB)
   - `BookMode = Tournament` (scored `56.2%` vs. `Wide`)

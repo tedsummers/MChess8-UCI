@@ -103,6 +103,7 @@ typedef struct {
     int null_move;       /* 0/1 */
     int extensions;      /* 0/1 */
     int deterministic_book; /* 0/1 */
+    int classic_style;      /* 0/1: dial back modern eval/pruning for 1998 character */
     int threads;         /* 1..64, default 1 */
 } EngineSettings;
 

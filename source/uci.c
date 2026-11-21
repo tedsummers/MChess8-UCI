@@ -58,6 +58,7 @@ void settings_init_defaults(EngineSettings *cfg) {
     cfg->null_move = 1;
     cfg->extensions = 1;
     cfg->deterministic_book = 0;
+    cfg->classic_style = 0;
     cfg->threads = 1;
 }
 
@@ -105,6 +106,7 @@ static void handle_uci(const EngineSettings *cfg) {
     printf("option name BookMode type combo default %s var Off var Tournament var Wide var Broad\n", bm);
     printf("option name BookPath type string default %s\n", cfg->book_path);
     printf("option name DeterministicBook type check default %s\n", cfg->deterministic_book ? "true" : "false");
+    printf("option name ClassicStyle type check default %s\n", cfg->classic_style ? "true" : "false");
     printf("option name Tablebases type check default %s\n", cfg->use_tb ? "true" : "false");
     printf("option name TablebasePath type string default %s\n", cfg->tb_path);
     printf("option name Aggression type spin default %d min 0 max 8\n", cfg->aggression);
@@ -162,6 +164,8 @@ static void handle_setoption(EngineSettings *cfg, char *line) {
         book_init(cfg->book_path);
     } else if (strcasecmp(name, "DeterministicBook") == 0) {
         cfg->deterministic_book = (strcasecmp(val, "true") == 0 || strcmp(val, "1") == 0);
+    } else if (strcasecmp(name, "ClassicStyle") == 0) {
+        cfg->classic_style = (strcasecmp(val, "true") == 0 || strcmp(val, "1") == 0);
     } else if (strcasecmp(name, "Tablebases") == 0) {
         cfg->use_tb = (strcasecmp(val, "true") == 0 || strcmp(val, "1") == 0);
     } else if (strcasecmp(name, "TablebasePath") == 0) {

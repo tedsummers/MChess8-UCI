@@ -27,4 +27,4 @@ UCI Options:
   Aggression (0..8), Mobility (0..8), Centrality (0..8), KingPlacement (0..8),
   PawnStructure (0..8), PassedPawns (0..8), RandomLimit (0..100, default 0),
   Contempt (-200..200), NullMove (true/false), Extensions (true/false),
-  Ponder (true/false, default true)
+  Ponder (true/false, default true), ClassicStyle (true/false, default false)
